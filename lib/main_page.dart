@@ -1,33 +1,84 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 
-// 1-2. 탭 화면 (각 화면 import)
+import 'grid_page.dart';
+import 'list_page.dart';
 
-// 1-2. 탭 화면 (Stateless -> Stateful)
-class MainPage extends StatelessWidget {
-  // 1-2. 탭 화면 (_selectedTabIndex 변수 옮김)
-  // 1-2. 탭 화면 (탭 인덱스 설정)
+class MainPage extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState(){
+    return _MainPageState();
+  }
+}
 
-  // 1-2. 탭 화면 (createState 함수 추가)
+class _MainPageState extends State<MainPage>{
+  int _selectedTabIndex = 0;
+  var ttt = "test";
 
-  // 1-2. 탭 화면 (build() 함수를 _MainState로 옮김)
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // 1-1. 상단화면 (제목 수정)
-        title: Text('Flutter'),
-        // 1-1. 상단화면 (좌측 버튼 추가)
-
-        // 1-1. 상단화면 (우측 팝업 버튼 및 이벤트 추가)
-
+        title: Text('Movie'),
+        leading: Icon(Icons.menu),
+        actions: <Widget>[
+          PopupMenuButton <int>(
+            icon: Icon(Icons.sort),
+            onSelected: (value) {
+              if(value == 0){ print("예매율순");}
+              else if(value == 1){ print("큐레이순"); }
+              else { print("최신순"); }
+            },
+            itemBuilder: (context) {
+              return [
+                PopupMenuItem(value: 0, child: Text("예매유순")),
+                PopupMenuItem(value: 1, child: Text("큐레이순")),
+                PopupMenuItem(value: 2, child: Text("최신순")),
+              ];
+            },
+          ),
+        ],
       ),
-      // 1-2. 탭 화면 (List, Grid Widget 연동)
-      body: Center(child: Text("Hello Flutter")),
-      // 1-2. 탭 화면 (bottomNavigationBar 추가)
+
+      //body: _buildPage(_selectedTabIndex),
+      body: Center(
+        child: _buildPage(_selectedTabIndex),
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.white,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.view_list),
+            //title: Text("리스트"),
+            label: '리스트',
+            tooltip: '리스트',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.grid_on),
+            //title: Text("타일"),
+            label: '타일',
+            tooltip: '타일',
+          ),
+        ],
+        currentIndex: _selectedTabIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedTabIndex = index;
+            print("$_selectedTabIndex Tab Clicked");
+          });
+        },
+      ),
     );
   }
 }
 
 // 1-2. 탭 화면 (State 구현)
+Widget _buildPage(index){
+  if(index ==0){
+    return ListPage();
+  }else{
+    return GridPage();
+  }
+}
 
 // 1-2. 탭 화면 (List, Grid Widget 반환)

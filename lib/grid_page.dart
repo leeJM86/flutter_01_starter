@@ -1,17 +1,80 @@
 import 'package:flutter/material.dart';
-
-// 1-3. Grid 리스트 화면 (임포트)
+import 'model/data/dummys_repository.dart';
+import 'model/response/movies_response.dart';
 
 class GridPage extends StatelessWidget {
-  // 1-4. Grid 리스트 화면 (동적 데이터 추가)
+  final List<Movie> movies = DummysRepository.loadDummyMovies();
 
   @override
   Widget build(BuildContext context) {
-    // 1-4. Grid 리스트 화면 (GridView 구축)
-    return Center(child: Text("grid"));
+    return GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: (9/16),
+        ),
+        itemBuilder: (context, index) {
+          return _buildDummyItem(movies[index]);
+        },
+        itemCount: movies.length,
+        scrollDirection: Axis.vertical,
+    );
   }
 
-// 1-4. Grid 리스트 화면 (Grid 아이템 화면 구축)
+  Widget _buildDummyItem(Movie movie){
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Image.network(
+                  movie.thumb,
+                  fit: BoxFit.fill,
+                  width: double.infinity,
+                  height: double.infinity,
+                ),
+                Container(
+                  padding: EdgeInsets.all(8.0),
+                  child: _buildGradeImage(movie.grade),
+                )
+              ],
+              alignment: Alignment.topRight,
+            ),
+          ),
+          SizedBox(height: 8.0,),
+          FittedBox(
+            child: Text(
+              movie.title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              )
+            ),
+          ),
+          SizedBox(height: 8.0,),
+          Text(
+            '${movie.reservationGrade}위(${movie.userRating}) / ${movie.reservationRate}'
+          ),
+          SizedBox(height: 8.0,),
+          Text('${movie.date}'),
+        ],
+      ),
+    );
+  }
 
-// 1-4. Grid 리스트 화면 (관람 등급 이미지 버튼 함수 생성)
+  Widget _buildGradeImage(int grade) {
+    switch (grade) {
+      case 0:
+        return Image.asset("assets/ic_allages.png");
+      case 12:
+        return Image.asset("assets/ic_12.png");
+      case 15:
+        return Image.asset("assets/ic_15.png");
+      case 19:
+        return Image.asset("assets/ic_19.png");
+      default:
+        return null;
+    }
+  }
 }
