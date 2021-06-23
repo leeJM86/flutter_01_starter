@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'grid_page.dart';
 import 'list_page.dart';
+import 'web_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -59,6 +59,12 @@ class _MainPageState extends State<MainPage>{
             label: '타일',
             tooltip: '타일',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.web),
+            //title: Text("타일"),
+            label: '웹',
+            tooltip: '웹',
+          ),
         ],
         currentIndex: _selectedTabIndex,
         onTap: (index) {
@@ -74,10 +80,12 @@ class _MainPageState extends State<MainPage>{
 
 // 1-2. 탭 화면 (State 구현)
 Widget _buildPage(index){
-  if(index ==0){
+  if(index == 0){
     return ListPage();
-  }else{
+  }else if(index == 1){
     return GridPage();
+  }else{
+    return WebPage();
   }
 }
 
