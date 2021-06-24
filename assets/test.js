@@ -5,7 +5,7 @@ var message;
 xmlHttp.onreadystatechange = function(e){
     if(this.readyState == 4){
         if(this.status == 200){
-            postmsg("abcd");
+            postmsg(this.responseText);
         }else{
             postmsg("status...");
         }

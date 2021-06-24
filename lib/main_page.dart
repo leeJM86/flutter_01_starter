@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'grid_page.dart';
 import 'list_page.dart';
-import 'web_page.dart';
+//import 'web_page.dart';
+import 'web_page2.dart';
+import 'video_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -65,11 +67,52 @@ class _MainPageState extends State<MainPage>{
             label: '웹',
             tooltip: '웹',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.ondemand_video),
+            //title: Text("타일"),
+            label: '비데오',
+            tooltip: '비데오',
+          )
         ],
         currentIndex: _selectedTabIndex,
         onTap: (index) {
           setState(() {
+            if(index < 3){
             _selectedTabIndex = index;
+            }else if(index == 3){
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  transitionDuration: Duration(milliseconds: 200),
+                  reverseTransitionDuration: Duration(milliseconds: 500),
+                  pageBuilder: (context, animation, secondaryAnimation) {
+                    if(_selectedTabIndex == 2) {
+                      WebPage_hide();
+                    }
+                    return videoPage();
+                  },
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    var begin = Offset(1.0, 0.0);
+                    var end = Offset.zero;
+                    var curve = Curves.fastLinearToSlowEaseIn;
+
+                    var tween = Tween(begin: begin, end: end);
+                    var curvedAnimation = CurvedAnimation(
+                      parent: animation,
+                      curve: curve,
+                    );
+
+                    if(_selectedTabIndex == 2 && animation.status == AnimationStatus.reverse) {
+                      WebPage_show();
+                    }
+
+                    return SlideTransition(
+                      position: tween.animate(curvedAnimation),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            }
             print("$_selectedTabIndex Tab Clicked");
           });
         },
@@ -84,8 +127,10 @@ Widget _buildPage(index){
     return ListPage();
   }else if(index == 1){
     return GridPage();
+  }else if(index == 2){
+    return WebPage2();
   }else{
-    return WebPage();
+    return null;
   }
 }
 

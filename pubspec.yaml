@@ -26,6 +26,7 @@ dependencies:
   webview_flutter: ^2.0.8
   flutter_webview_plugin: ^0.4.0
   path_provider: ^2.0.2
+  video_player: ^2.1.6
 
   # 2-2. 상세화면 (NumberFormat 라이브러리 임포트)
 

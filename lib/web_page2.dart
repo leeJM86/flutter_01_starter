@@ -3,8 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/platform_interface.dart';
-//import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
 final Set<JavascriptChannel> jsChannels = [
   JavascriptChannel(
@@ -14,35 +13,56 @@ final Set<JavascriptChannel> jsChannels = [
       }),
 ].toSet();
 
-WebViewController wc;
+final fwp = FlutterWebviewPlugin();
 
 class WebPage_evJS {
   WebPage_evJS(String str){
     print("evJS============${str}");
-    wc.evaluateJavascript("message1('${str}');");
+    fwp.evalJavascript("message1('${str}');");
   }
 }
 
-class WebPage extends StatefulWidget {
-  @override
-  _WebPage createState() => new _WebPage();
+class WebPage_hide {
+  WebPage_hide(){
+    fwp.hide();
+    print("WebPage_hide============");
+  }
 }
 
-class _WebPage extends State<WebPage>{
+class WebPage_show {
+  WebPage_show(){
+    fwp.show();
+    print("WebPage_show============");
+  }
+}
+
+class WebPage2 extends StatefulWidget {
+  @override
+  _WebPage2 createState() => new _WebPage2();
+}
+
+class _WebPage2 extends State<WebPage2>{
+  @override
+  void dispose() {
+    fwp.hide();
+    fwp.close();
+    fwp.dispose();
+    super.dispose();
+  }
+
   @override
   build(BuildContext context) {
     return Column(
       children: <Widget>[
         Expanded(
-           child: WebView(
-             initialUrl: "file:///android_asset/flutter_assets/assets/test.html",
-             javascriptMode: JavascriptMode.unrestricted,
-             javascriptChannels: jsChannels,
-
-             onWebViewCreated: (controller) {
-               wc = controller;
-             },
-           ),
+          child: WebviewScaffold(
+            url: "file:///android_asset/flutter_assets/assets/test.html",
+            javascriptChannels: jsChannels,
+            withLocalUrl: true,
+            allowFileURLs: true,
+            withJavascript: true,
+            withLocalStorage: true,
+          ),
         ),
         SizedBox(
           child: TextButton(
