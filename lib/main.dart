@@ -4,8 +4,8 @@ import 'package:padak_starter/main_page.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  static const cl1 = Colors.blue;
-  static const cl2 = Colors.red;
+  static const cl1 = Colors.green;
+  static const cl2 = Colors.teal;
 
   @override
   Widget build(BuildContext context) {

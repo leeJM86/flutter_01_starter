@@ -66,6 +66,17 @@ flutter:
     - assets/test.html
     - assets/test.js
     - assets/test.css
+    - assets/gallery/
+    - assets/gallery/1/
+    - assets/gallery/2/
+    - assets/gallery/3/
+    - assets/gallery/4/
+    - assets/gallery/5/
+    - assets/gallery/6/
+    - assets/gallery/7/
+    - assets/gallery/8/
+    - assets/gallery/9/
+    - assets/gallery/10/
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
 

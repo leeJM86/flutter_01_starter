@@ -4,6 +4,7 @@ import 'list_page.dart';
 //import 'web_page.dart';
 import 'web_page2.dart';
 import 'video_page.dart';
+import 'gallery_page.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -72,14 +73,20 @@ class _MainPageState extends State<MainPage>{
             //title: Text("타일"),
             label: '비데오',
             tooltip: '비데오',
-          )
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.photo_library),
+            //title: Text("타일"),
+            label: '갤러리',
+            tooltip: '갤러리',
+          ),
         ],
         currentIndex: _selectedTabIndex,
         onTap: (index) {
           setState(() {
             if(index < 3){
             _selectedTabIndex = index;
-            }else if(index == 3){
+            }else if(index >= 3){
               Navigator.of(context).push(
                 PageRouteBuilder(
                   transitionDuration: Duration(milliseconds: 200),
@@ -88,7 +95,11 @@ class _MainPageState extends State<MainPage>{
                     if(_selectedTabIndex == 2) {
                       WebPage_hide();
                     }
-                    return videoPage();
+                    if(index == 3){
+                      return videoPage();
+                    }else{
+                      return galleryPage();
+                    }
                   },
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     var begin = Offset(1.0, 0.0);
