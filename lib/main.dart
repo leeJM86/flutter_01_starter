@@ -5,6 +5,7 @@ void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   static const cl1 = Colors.green;
+  static const cl1_1 = Colors.green;
   static const cl2 = Colors.teal;
 
   @override
@@ -19,7 +20,10 @@ class MyApp extends StatelessWidget {
           color: cl1,
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          type: BottomNavigationBarType.shifting,
           backgroundColor: cl1,
+          selectedItemColor: cl1,
+          unselectedItemColor: cl1.shade100,
         ),
       ),
       darkTheme: ThemeData(

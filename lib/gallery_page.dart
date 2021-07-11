@@ -1,4 +1,8 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 // 아이템 갯수
 int _itemcount = 6;
@@ -46,10 +50,39 @@ class _galleryPage extends State<galleryPage>{
     });
   }
 
+  void directoryInit() async{
+    Directory appDocDir = await getExternalStorageDirectory();
+    String appDocPath = appDocDir.path;
+    var test1 = Directory(appDocPath);
+
+    print(appDocPath);
+    print(test1.listSync().length);
+    print("=====================================");
+    for(var i=0; i<test1.listSync().length; i++){
+      print(test1.listSync().elementAt(i));
+
+      if(test1.listSync().elementAt(i) is Directory){
+        print("▼=====================================");
+        var test2 = Directory(test1.listSync().elementAt(i).path);
+        print(test2.listSync().length);
+        test2.listSync().forEach((element) {
+          print(element);
+        });
+      }
+    }
+    print("=====================================");
+
+    List appDocDir2 = await getExternalStorageDirectories(type: StorageDirectory.dcim);
+    appDocDir2.forEach((element) {
+      print(element);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController.addListener(_pageListener);
+    directoryInit();
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:volume_controller/volume_controller.dart';
 import 'package:video_player/video_player.dart';
 import 'VideoProgressIndicator_ljm.dart';
@@ -9,6 +9,8 @@ import 'VideoProgressIndicator_ljm.dart';
 bool _hitTest = true;
 bool _hitTestHold = false;
 bool _fullscreen = false;
+bool _rewindHitTest = false;
+bool _forwardHitTest = false;
 Icon _playAndPauseIcon = Icon(Icons.play_arrow_rounded);
 Icon _volIcon = Icon(Icons.volume_up_rounded);
 
@@ -28,8 +30,8 @@ class videoPage extends StatefulWidget {
 }
 
 class _videoPage extends State<videoPage>{
-  double _contextWidthPercent = 100;
-  double _contextHeightPercent = 100;
+  double _cntSPer = 100;
+  double _cntLPer= 100;
 
   VideoPlayerController _controller;
   VolumeController _volController = new VolumeController();
@@ -87,9 +89,10 @@ class _videoPage extends State<videoPage>{
       setState(() {
         _hitTest = true;
         autohide.auto();
+        _controller.play();
       })
     });
-    _controller.play();
+
   }
 
   @override
@@ -101,8 +104,8 @@ class _videoPage extends State<videoPage>{
 
   @override
   Widget build(BuildContext context) {
-    _contextWidthPercent = MediaQuery.of(context).size.shortestSide / 100;
-    _contextHeightPercent = MediaQuery.of(context).size.longestSide / 100;
+    _cntSPer = MediaQuery.of(context).size.shortestSide / 100;
+    _cntLPer = MediaQuery.of(context).size.longestSide / 100;
 
     final double _statusBarHeight = MediaQuery.of(context).padding.top;
 
@@ -134,11 +137,11 @@ class _videoPage extends State<videoPage>{
               Center(
                 child: _fullscreen ?
                 Container(
-                  child: _ControlsOverlay(controller: _controller, volController: _volController, cntWPer: _contextWidthPercent, cntHPer: _contextHeightPercent, staHeight: _statusBarHeight+(3*_contextHeightPercent),),
+                  child: _ControlsOverlay(controller: _controller, volController: _volController, cntSPer: _cntSPer, cntLPer: _cntLPer, staHeight: _statusBarHeight+(3*_cntLPer),),
                 ) :
                 AspectRatio(
                   aspectRatio: _controller.value.aspectRatio,
-                  child: _ControlsOverlay(controller: _controller, volController: _volController, cntWPer: _contextWidthPercent, cntHPer: _contextHeightPercent,),
+                  child: _ControlsOverlay(controller: _controller, volController: _volController, cntSPer: _cntSPer, cntLPer: _cntLPer,),
                 ),
               ),
 
@@ -151,12 +154,12 @@ class _videoPage extends State<videoPage>{
 }
 
 class _ControlsOverlay extends StatelessWidget {
-  const _ControlsOverlay({Key key, this.controller, this.volController, this.cntWPer, this.cntHPer, this.staHeight = 0, this.fadeDur1 = 200, this.fadeDur2 = 10000}) : super(key: key);
+  const _ControlsOverlay({Key key, this.controller, this.volController, this.cntSPer, this.cntLPer, this.staHeight = 0, this.fadeDur1 = 200, this.fadeDur2 = 10000}) : super(key: key);
 
   final VideoPlayerController controller;
   final VolumeController volController;
-  final double cntWPer;
-  final double cntHPer;
+  final double cntSPer;
+  final double cntLPer;
   final double staHeight;
 
   final int fadeDur1;
@@ -182,8 +185,8 @@ class _ControlsOverlay extends StatelessWidget {
           duration: Duration(milliseconds: fadeDur1),
           child: GestureDetector(
             child: Container(
-              color: Colors.black.withOpacity(0.8),
-            ),
+                  color: Colors.black.withOpacity(0.8),
+                ),
             onTapDown: (details) {
               _hitTest = _hitTestHold = true;
               autohide.auto();
@@ -203,7 +206,7 @@ class _ControlsOverlay extends StatelessWidget {
           duration: Duration(milliseconds: fadeDur1),
           child: Center(
             child: IconButton(
-              iconSize: 30*cntWPer,
+              iconSize: 30*cntSPer,
               alignment: Alignment.center,
               padding: EdgeInsets.all(0),
               color: Colors.white.withOpacity(0.8),
@@ -219,6 +222,94 @@ class _ControlsOverlay extends StatelessWidget {
           ),
         ),
         AnimatedOpacity(
+          opacity: _rewindHitTest ? 1 : 0,
+          duration: Duration(milliseconds: 200),
+          curve: doublePingPongCurve(visibled: _rewindHitTest),
+          child: GestureDetector(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.25,
+                heightFactor: 1,
+                child: GestureDetector(
+                  child: Container(
+                    child: Icon(
+                      Icons.fast_rewind_rounded,
+                      color: Colors.white.withOpacity(0.8),
+                      size: 15*cntSPer,
+                    ),
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                  onDoubleTap: () {
+                    _rewindHitTest = true;
+                    controller.seekTo(Duration(seconds: (controller.value.position.inSeconds - 10)));
+                  },
+                ),
+              ),
+            ),
+            onTapDown: (details) {
+              _hitTest = _hitTestHold = true;
+              autohide.auto();
+            },
+            onTapUp: (details) {
+              _hitTestHold = false;
+              autohide.auto();
+            },
+            onTapCancel: () {
+              _hitTestHold = false;
+              autohide.auto();
+            },
+          ),
+          onEnd: () {
+            _rewindHitTest = false;
+            controller.notifyListeners();
+          },
+        ),
+        AnimatedOpacity(
+          opacity: _forwardHitTest ? 1 : 0,
+          duration: Duration(milliseconds: 200),
+          curve: doublePingPongCurve(visibled: _forwardHitTest),
+          child: GestureDetector(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: FractionallySizedBox(
+                widthFactor: 0.25,
+                heightFactor: 1,
+                child: GestureDetector(
+                  child: Container(
+                    child: Icon(
+                      Icons.fast_forward_rounded,
+                      color: Colors.white.withOpacity(0.8),
+                      size: 15*cntSPer,
+                    ),
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                  onDoubleTap: () {
+                    _forwardHitTest = true;
+                    controller.seekTo(Duration(seconds: (controller.value.position.inSeconds + 10)));
+                  },
+                ),
+              ),
+            ),
+            onTapDown: (details) {
+              _hitTest = _hitTestHold = true;
+              autohide.auto();
+            },
+            onTapUp: (details) {
+              _hitTestHold = false;
+              autohide.auto();
+            },
+            onTapCancel: () {
+              _hitTestHold = false;
+              autohide.auto();
+            },
+          ),
+          onEnd: () {
+            _forwardHitTest = false;
+            controller.notifyListeners();
+          },
+        ),
+        AnimatedOpacity(
           opacity: (_hitTest || !controller.value.isPlaying) ? 1 : 0,
           duration: Duration(milliseconds: fadeDur1),
           child: GestureDetector(
@@ -227,11 +318,11 @@ class _ControlsOverlay extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomRight,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 4*cntHPer),
+                    padding: EdgeInsets.only(bottom: 4*cntLPer),
                     child: IconButton(
                       icon: Icon(Icons.fullscreen_rounded),
                       color: Colors.white.withAlpha(90),
-                      iconSize: 6*cntWPer,
+                      iconSize: 6*cntSPer,
                       alignment: Alignment.center,
                       onPressed: () {
                         if(_fullscreen){
@@ -249,10 +340,10 @@ class _ControlsOverlay extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomLeft,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: 4*cntHPer),
+                    padding: EdgeInsets.only(bottom: 4*cntLPer),
                     child: IconButton(
                       color: Colors.white.withAlpha(90),
-                      iconSize: 6*cntWPer,
+                      iconSize: 6*cntSPer,
                       alignment: Alignment.center,
                       icon: _playAndPauseIcon,
                       onPressed: () {
@@ -268,8 +359,8 @@ class _ControlsOverlay extends StatelessWidget {
                   ),
                 ), // 재생버튼
                 SizedBox(
-                  height: 6*cntHPer + staHeight,
-                  width: 30*cntWPer,
+                  height: 6*cntLPer + staHeight,
+                  width: 30*cntSPer,
                   child: Padding(
                     padding: EdgeInsets.only(top: staHeight,),
                     child: Stack(
@@ -280,7 +371,7 @@ class _ControlsOverlay extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             child: IconButton(
                               color: Colors.white.withAlpha(90),
-                              iconSize: 6*cntWPer,
+                              iconSize: 6*cntSPer,
                               alignment: Alignment.center,
                               icon: _volIcon,
                               onPressed: () {
@@ -298,14 +389,14 @@ class _ControlsOverlay extends StatelessWidget {
                         Align(
                           alignment: Alignment.topLeft,
                           child: Padding(
-                            padding: EdgeInsets.only(left: 14*cntWPer, top: (6*cntHPer-1.5*cntWPer)/2,),
+                            padding: EdgeInsets.only(left: 14*cntSPer, top: (6*cntLPer-1.5*cntSPer)/2,),
                             child: SliderTheme(
                               data: SliderThemeData(
-                                trackShape: CustomTrackShape(width: 26*cntWPer,height: 1.5*cntWPer,),
+                                trackShape: CustomTrackShape(width: 26*cntSPer,height: 1.5*cntSPer,),
                                 thumbColor: Colors.red,
                                 activeTrackColor: Colors.red,
                                 inactiveTrackColor: Colors.white.withOpacity(0.5),
-                                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 1.5*cntWPer),
+                                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 1.5*cntSPer),
                               ),
                               child: Slider(
                                 value: _getVolume*100,
@@ -326,14 +417,14 @@ class _ControlsOverlay extends StatelessWidget {
                   alignment: Alignment.bottomCenter,
                   child: VideoProgressIndicator2(
                     controller,
-                    padding: EdgeInsets.only(left: 3*cntWPer, right: 3*cntWPer, bottom: 3*cntHPer),
+                    padding: EdgeInsets.only(left: 3*cntSPer, right: 3*cntSPer, bottom: 3*cntLPer),
                     colors: VideoProgressColors(
                       bufferedColor: Colors.white.withAlpha(80),
                       playedColor: Colors.red,
                     ),
                     allowScrubbing: true,
-                    height: 1*cntWPer,
-                    radius: BorderRadius.all(Radius.circular(0.5*cntWPer)),
+                    height: 1*cntSPer,
+                    radius: BorderRadius.all(Radius.circular(0.5*cntSPer)),
                   ),
                 ), // 중앙 재생버튼
               ],
@@ -353,8 +444,6 @@ class _ControlsOverlay extends StatelessWidget {
           ),
 
         ),
-
-
       ],
     );
   }
@@ -383,6 +472,21 @@ class autohide {
   }
 }
 
+class doublePingPongCurve extends Curve {
+  final double count;
+  final bool visibled;
+
+  doublePingPongCurve({this.count = 1, this.visibled});
+
+  @override
+  double transformInternal(double t){
+    double val = tan(t*pi)+1;
+    if(!visibled){ val = 0.0; }
+    if(val > 1){ val=1;}
+    return val;
+  }
+}
+
 class CustomTrackShape extends RoundedRectSliderTrackShape {
   const CustomTrackShape({Key key, this.width, this.height,});
 
@@ -403,3 +507,4 @@ class CustomTrackShape extends RoundedRectSliderTrackShape {
     return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
   }
 }
+

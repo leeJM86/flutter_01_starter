@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'grid_page.dart';
 import 'list_page.dart';
 //import 'web_page.dart';
-import 'web_page2.dart';
+import 'web_page.dart';
 import 'video_page.dart';
 import 'gallery_page.dart';
 
@@ -48,7 +48,6 @@ class _MainPageState extends State<MainPage>{
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.white,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.view_list),
@@ -139,7 +138,7 @@ Widget _buildPage(index){
   }else if(index == 1){
     return GridPage();
   }else if(index == 2){
-    return WebPage2();
+    return WebPage();
   }else{
     return null;
   }
