@@ -47,7 +47,7 @@ class _WebPage extends State<WebPage>{
   var server;
 
   initWeb() async{
-    final String zipName = "seedusnetWebBook_v1_cheongyang_2020.zip";
+    final String zipName = "web.zip";
     final webZip = await rootBundle.load("assets/${zipName}");
 
     final Directory appCacheDir = await getTemporaryDirectory();
