@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:local_assets_server/local_assets_server.dart';
 
 final Set<JavascriptChannel> jsChannels = [
   JavascriptChannel(
@@ -42,39 +44,55 @@ class WebPage extends StatefulWidget {
 }
 
 class _WebPage extends State<WebPage>{
-  initArchive() async{
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    String appDocPath = appDocDir.path;
+  var server;
 
-    final zipFile = File("assets/web.zip");
-    final destinationDir = Directory("${appDocPath}/web").create();
+  initWeb() async{
+    final String zipName = "seedusnetWebBook_v1_cheongyang_2020.zip";
+    final webZip = await rootBundle.load("assets/${zipName}");
+
+    final Directory appCacheDir = await getTemporaryDirectory();
+    final String appCachePath = appCacheDir.path;
+
+    final String homePath = "web";
+    Directory("${appCachePath}/${homePath}").create();
+
+    String address;
+    int port;
+
+    final zipFile = File("${appCachePath}/${homePath}/${zipName}");
+    await zipFile.writeAsBytes(webZip.buffer.asUint8List(webZip.offsetInBytes, webZip.lengthInBytes));
 
     try {
       await ZipFile.extractToDirectory(
           zipFile: zipFile,
-          destinationDir: destinationDir,
+          destinationDir: Directory("${appCachePath}/${homePath}"),
           onExtracting: (zipEntry, progress) {
-            print('progress: ${progress.toStringAsFixed(1)}%');
-            print('name: ${zipEntry.name}');
-            print('isDirectory: ${zipEntry.isDirectory}');
-            print(
-                'modificationDate: ${zipEntry.modificationDate.toLocal().toIso8601String()}');
-            print('uncompressedSize: ${zipEntry.uncompressedSize}');
-            print('compressedSize: ${zipEntry.compressedSize}');
-            print('compressionMethod: ${zipEntry.compressionMethod}');
-            print('crc: ${zipEntry.crc}');
             return ZipFileOperation.includeItem;
           });
     } catch (e) {
-      print(e);
+      print("extractToDirectory Error:${e}");
+    } finally {
+      server = new LocalAssetsServer(
+        address: InternetAddress.loopbackIPv4,
+        rootDir: Directory("${appCachePath}/${homePath}"),
+        logger: DebugLogger(),
+      );
+
+      final serverAddress = await server.serve();
+
+      address = serverAddress.address;
+      port = server.boundPort;
+
+      print("http://$address:$port/");
+
+      fwp.reloadUrl("http://$address:$port/");
     }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
+    initWeb();
     super.initState();
-    initArchive();
   }
 
   @override
@@ -82,6 +100,7 @@ class _WebPage extends State<WebPage>{
     fwp.hide();
     fwp.close();
     fwp.dispose();
+    server?.stop();
     super.dispose();
   }
 
@@ -89,20 +108,25 @@ class _WebPage extends State<WebPage>{
   build(BuildContext context) {
     return Column(
       children: <Widget>[
-        /*Expanded(
+        Expanded(
           child: WebviewScaffold(
-            url: "file:///android_asset/flutter_assets/assets/test.html",
-            javascriptChannels: jsChannels,
-            withLocalUrl: true,
+            url: "none",
             allowFileURLs: true,
             withJavascript: true,
             withLocalStorage: true,
+            withLocalUrl: true,
+            mediaPlaybackRequiresUserGesture: true,
+            useWideViewPort: true,
+            debuggingEnabled: true,
+            javascriptChannels: jsChannels,
           ),
-        ),*/
+        ),
         SizedBox(
           child: TextButton(
             child: Text("button"),
             onPressed: () {
+              //print("file:///${appDocPath}/file/index.html");
+              //fwp.reloadUrl("file:///${appDocPath}/file/index.html");
               WebPage_evJS("sdfasfgaefd");
             },
           ),
